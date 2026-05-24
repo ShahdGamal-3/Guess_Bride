@@ -595,13 +595,13 @@
 
   // ---------- Firebase setup (REPLACE WITH YOUR CONFIG) ----------
   const firebaseConfig = {
-    apiKey: "REPLACE_WITH_YOUR_API_KEY",
-    authDomain: "REPLACE_WITH_YOUR_AUTH_DOMAIN",
-    databaseURL: "REPLACE_WITH_YOUR_DATABASE_URL", // e.g. https://your-project.firebaseio.com
-    projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
-    storageBucket: "REPLACE_WITH_YOUR_STORAGE_BUCKET",
-    messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
-    appId: "REPLACE_WITH_YOUR_APP_ID"
+    apiKey: "AIzaSyBJBrruSVi6o2B0RxLwDqLg7_Eq5H4yaRA",
+    authDomain: "guessbride-69b4c.firebaseapp.com",
+    projectId: "guessbride-69b4c",
+    storageBucket: "guessbride-69b4c.firebasestorage.app",
+    messagingSenderId: "51546349073",
+    appId: "1:51546349073:web:1e412ae9e7c2452e75dbb0",
+    measurementId: "G-8R3TS5L9FL"
   };
 
   let db = null;
@@ -845,5 +845,112 @@
 
   // voterName input removed — votes are saved automatically on selection
 </script>
+
+<!-- Firebase SDKs (compat) and voting panel/script -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  #vote-panel { position: fixed; right: 12px; bottom: 12px; background: #fff; padding: 12px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.06); max-width: 320px; z-index: 9999; font-family: Arial, Helvetica, sans-serif; }
+  #vote-panel h4 { margin: 0 0 8px 0; font-size: 14px; }
+  .candidate-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .candidate-row img { width:40px; height:40px; object-fit:cover; border-radius:4px; }
+  .vote-btn { padding:6px 8px; background:#28a745; color:#fff; border:0; border-radius:4px; cursor:pointer; }
+  .vote-btn:disabled { opacity:0.6; cursor:default }
+</style>
+
+<script>
+(function(){
+  // List of candidates (must match your filenames without extension)
+  const candidates = ['Diana','Huda','Katy','Magda','Naira','Rahma','Rawan','Salma','Shahd','Shrouk','Sosanna'];
+
+  // TODO: replace this config with your Firebase project's config
+  const firebaseConfig = {
+    apiKey: "REPLACE_API_KEY",
+    authDomain: "REPLACE_PROJECT.firebaseapp.com",
+    databaseURL: "https://REPLACE_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "REPLACE_PROJECT",
+    storageBucket: "REPLACE_PROJECT.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+  };
+
+  // Initialize Firebase
+  try { firebase.initializeApp(firebaseConfig); } catch(e) { console.warn('Firebase init warning:', e); }
+  const db = firebase.database();
+
+  // Build floating vote panel
+  function createPanel(){
+    const panel = document.createElement('div');
+    panel.id = 'vote-panel';
+    panel.innerHTML = '<h4>Vote Panel</h4><div id="candidates-list"></div><div style="border-top:1px solid #eee;padding-top:8px;margin-top:8px">Total votes: <span id="total-votes">0</span></div><div style="font-size:11px;margin-top:6px;color:#666">منع التصويت المتكرر محدود بالمتصفح</div>';
+    document.body.appendChild(panel);
+    const list = panel.querySelector('#candidates-list');
+
+    candidates.forEach(id => {
+      const row = document.createElement('div'); row.className = 'candidate-row';
+      const img = document.createElement('img'); img.src = id + '.jpeg'; img.alt = id;
+      const name = document.createElement('div'); name.textContent = id; name.style.flex = '1';
+      const btn = document.createElement('button'); btn.className = 'vote-btn'; btn.textContent = 'Vote';
+      btn.setAttribute('data-candidate', id);
+      const count = document.createElement('div'); count.innerHTML = '<span id="vote-count-' + id + '">0</span>';
+      row.appendChild(img); row.appendChild(name); row.appendChild(btn); row.appendChild(count);
+      list.appendChild(row);
+    });
+  }
+
+  // Realtime listener
+  function listenCounts(){
+    const votesRef = db.ref('votes');
+    votesRef.on('value', snapshot => {
+      const all = snapshot.val() || {};
+      let total = 0;
+      candidates.forEach(id => {
+        const c = all[id] || 0; total += c;
+        const el = document.getElementById('vote-count-' + id);
+        if (el) el.textContent = c;
+        const btn = document.querySelector('[data-candidate="'+id+'"]');
+        if (btn) btn.disabled = false;
+      });
+      const te = document.getElementById('total-votes'); if (te) te.textContent = total;
+    });
+  }
+
+  // Soft client-side prevention
+  function canVote(id){ return !localStorage.getItem('voted_' + id); }
+
+  // Vote transaction
+  function voteFor(id){
+    const ref = db.ref('votes/' + id);
+    ref.transaction(current => (current || 0) + 1, (err, committed, snap) => {
+      if (err){ alert('حدث خطأ أثناء التصويت'); console.error(err); return; }
+      if (committed){
+        localStorage.setItem('voted_' + id, '1');
+        const el = document.getElementById('vote-count-' + id);
+        if (el) el.textContent = snap.val();
+        const btn = document.querySelector('[data-candidate="'+id+'"]');
+        if (btn) btn.disabled = true;
+      }
+    });
+  }
+
+  function attachHandlers(){
+    document.querySelectorAll('[data-candidate]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-candidate');
+        if (!canVote(id)) { alert('لقد صوتت بالفعل من هذا المتصفح'); return; }
+        btn.disabled = true;
+        voteFor(id);
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    createPanel();
+    try { listenCounts(); } catch(e) { console.warn('Realtime listener error', e); }
+    attachHandlers();
+  });
+})();
+</script>
+
 </body>
 </html>

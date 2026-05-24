@@ -1,0 +1,22 @@
+[debug] [2026-05-24T08:54:02.659Z] ----------------------------------------------------------------------
+[debug] [2026-05-24T08:54:02.661Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\shahd\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js projects:create guess-bride-<you>-2026 --display-name Guess Bride
+[debug] [2026-05-24T08:54:02.661Z] CLI Version:   15.18.0
+[debug] [2026-05-24T08:54:02.661Z] Platform:      win32
+[debug] [2026-05-24T08:54:02.661Z] Node Version:  v24.13.0
+[debug] [2026-05-24T08:54:02.661Z] Time:          Sun May 24 2026 11:54:02 GMT+0300 (Eastern European Summer Time)
+[debug] [2026-05-24T08:54:02.661Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-24T08:54:02.668Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-24T08:54:02.668Z] > authorizing via signed-in user (shahdgamal1977@gmail.com)
+[debug] [2026-05-24T08:54:02.672Z] Checked if tokens are valid: true, expires at: 1779616404151
+[debug] [2026-05-24T08:54:02.672Z] Checked if tokens are valid: true, expires at: 1779616404151
+[debug] [2026-05-24T08:54:02.672Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects [none]
+[debug] [2026-05-24T08:54:02.672Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects {"projectId":"guess-bride-<you>-2026","name":"Guess Bride"}
+[debug] [2026-05-24T08:54:03.636Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects 400
+[debug] [2026-05-24T08:54:03.636Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects {"error":{"code":400,"message":"field [project_id] has issue [project_id contains invalid characters]","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.BadRequest","fieldViolations":[{"field":"project_id","description":"project_id contains invalid characters"}]},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"url":"https://cloud.google.com/resource-manager/reference/rest/v1/projects"}]}]}}
+[debug] [2026-05-24T08:54:03.940Z] FirebaseError: Request to https://cloudresourcemanager.googleapis.com/v1/projects had HTTP Error: 400, field [project_id] has issue [project_id contains invalid characters]
+    at responseToError (C:\Users\shahd\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:53:12)
+    at RetryOperation._fn (C:\Users\shahd\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:333:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[error] 
+[error] Error: Failed to create project. See firebase-debug.log for more info.
