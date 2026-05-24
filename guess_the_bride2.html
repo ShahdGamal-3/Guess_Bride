@@ -546,7 +546,12 @@
   <div class="suspects-grid" id="suspectsGrid"></div>
 
   <div class="vote-panel">
-
+    <h3>🗳️ Cast Your Vote!</h3>
+    <p>Pick a card above — your vote is saved automatically when you pick.</p>
+    <p style="font-size:.8rem; color:var(--text-soft);" id="voteStatus">Select a suspect card to vote 👆</p>
+    <div style="margin-top:.8rem;">
+      <button class="submit-vote-btn" id="submitVoteBtn" onclick="submitVote()">Vote 💌</button>
+    </div>
 
   <!-- Live tally -->
   <div class="tally-section" id="tallySection">
@@ -718,6 +723,7 @@
       document.getElementById('voteStatus').textContent = `✅ Your vote for ${suspects[idx].name} is saved! 🎉`;
       const card = document.querySelector(`.suspect-card[data-idx="${idx}"]`);
       if(card) { card.classList.add('correct'); setTimeout(()=>card.classList.remove('correct'),600); }
+      const submitBtn = document.getElementById('submitVoteBtn'); if(submitBtn) submitBtn.disabled = true;
     } catch(e) {
       console.error('recordVote error', e);
       document.getElementById('voteStatus').textContent = 'Could not save your vote, try again.';
@@ -906,6 +912,7 @@
       if(card) card.classList.add('selected');
       selectedIdx = idx;
       document.getElementById('voteStatus').textContent = `You already voted for ${suspects[idx].name}. Thank you!`;
+      const submitBtn = document.getElementById('submitVoteBtn'); if(submitBtn) submitBtn.disabled = true;
     }
   })();
 
