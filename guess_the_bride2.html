@@ -508,6 +508,45 @@
     position: relative; z-index: 1;
   }
 
+  /* ADMIN TOGGLE */
+  .admin-row {
+    text-align: center; margin-top: 2rem;
+  }
+  .admin-btn {
+    background: var(--pink-pale);
+    border: 2px solid var(--pink-mid);
+    border-radius: 12px; padding: .5rem 1.2rem;
+    font-family: 'Quicksand', sans-serif;
+    font-size: .85rem; font-weight: 700;
+    color: var(--text-soft); cursor: pointer;
+    transition: background .2s;
+  }
+  .admin-btn:hover { background: var(--pink-mid); }
+  .admin-panel {
+    display: none;
+    background: var(--white);
+    border: 2px solid var(--pink-mid);
+    border-radius: 18px; padding: 1.5rem;
+    margin-top: 1rem; text-align: center;
+  }
+  .admin-panel.open { display: block; }
+  .admin-panel h4 { font-family: 'Playfair Display', serif; color: var(--text); margin-bottom: .8rem; }
+  .admin-select {
+    font-family: 'Quicksand', sans-serif;
+    border: 2px solid var(--pink-mid);
+    border-radius: 10px; padding: .5rem .8rem;
+    color: var(--text); margin-right: .6rem;
+    background: var(--blush); font-size: .9rem;
+  }
+  .admin-reveal-btn {
+    background: var(--pink-deep);
+    color: white; border: none; border-radius: 10px;
+    padding: .5rem 1.2rem;
+    font-family: 'Quicksand', sans-serif;
+    font-size: .9rem; font-weight: 700;
+    cursor: pointer;
+  }
+
   @media (max-width: 480px) {
     .suspects-grid { grid-template-columns: repeat(2, 1fr); }
     .suspect-name { font-size: 1.1rem; }
@@ -549,15 +588,37 @@
     <h3>🗳️ Cast Your Vote!</h3>
     <p>Pick a card above — your vote is saved automatically when you pick.</p>
     <p style="font-size:.8rem; color:var(--text-soft);" id="voteStatus">Select a suspect card to vote 👆</p>
-    <div style="margin-top:.8rem;">
-      <button class="submit-vote-btn" id="submitVoteBtn" onclick="submitVote()">Vote 💌</button>
-    </div>
+  </div>
 
   <!-- Live tally -->
   <div class="tally-section" id="tallySection">
     <h2 class="section-title" style="margin-bottom:1rem;">📊 Live Votes</h2>
     <div id="tallyBars"></div>
     <p style="text-align:center; color:var(--text-soft); font-size:.85rem; margin-top:1rem;">Total votes: <strong id="totalVotes">0</strong> 🗳️</p>
+  </div>
+
+  <!-- Admin reveal -->
+  <div class="admin-row">
+    <button class="admin-btn" onclick="toggleAdmin()">🔐 Admin Panel</button>
+    <div class="admin-panel" id="adminPanel">
+      <div style="margin-bottom:1.2rem;">
+        <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text-soft);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:1px;">🔐 Admin Password</label>
+        <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;">
+          <input type="password" id="adminPassInput" placeholder="Enter admin password" style="padding:.5rem .9rem;border:2px solid var(--pink-mid);border-radius:10px;font-family:'Quicksand',sans-serif;font-size:.9rem;background:var(--blush);color:var(--text);outline:none;min-width:200px;">
+          <button class="admin-reveal-btn" onclick="checkAdminPass()">Unlock 🔓</button>
+        </div>
+        <p id="passError" style="font-size:.75rem;color:#EF4444;margin-top:.4rem;display:none;">Wrong password! Try again 🙅‍♀️</p>
+      </div>
+
+      <div id="adminContent" style="display:none;">
+        <hr style="border:none;border-top:1.5px dashed var(--pink-mid);margin:1rem 0;">
+
+        <hr style="border:none;border-top:1.5px dashed var(--pink-mid);margin:1rem 0;">
+        <h4 style="margin-bottom:.8rem;">👑 Reveal the Real Bride</h4>
+        <select class="admin-select" id="brideSelect"></select>
+        <button class="admin-reveal-btn" onclick="revealBride()">🎉 Reveal!</button>
+      </div>
+    </div>
   </div>
 
   <!-- Reveal result -->
@@ -654,8 +715,7 @@
       ['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id => document.getElementById(id).textContent = '🎉');
       return;
     }
-    // For privacy, keep the days count unknown — show placeholder instead
-    document.getElementById('cd-days').textContent  = '??';
+    document.getElementById('cd-days').textContent  = Math.floor(diff/86400000);
     document.getElementById('cd-hours').textContent = Math.floor((diff%86400000)/3600000);
     document.getElementById('cd-mins').textContent  = Math.floor((diff%3600000)/60000);
     document.getElementById('cd-secs').textContent  = Math.floor((diff%60000)/1000);
@@ -723,7 +783,6 @@
       document.getElementById('voteStatus').textContent = `✅ Your vote for ${suspects[idx].name} is saved! 🎉`;
       const card = document.querySelector(`.suspect-card[data-idx="${idx}"]`);
       if(card) { card.classList.add('correct'); setTimeout(()=>card.classList.remove('correct'),600); }
-      const submitBtn = document.getElementById('submitVoteBtn'); if(submitBtn) submitBtn.disabled = true;
     } catch(e) {
       console.error('recordVote error', e);
       document.getElementById('voteStatus').textContent = 'Could not save your vote, try again.';
@@ -775,6 +834,25 @@
     });
   }
   renderTally();
+
+  // ───── ADMIN PASSWORD ─────
+  function checkAdminPass() {
+    const val = document.getElementById('adminPassInput').value;
+    if(val === ADMIN_PASS) {
+      document.getElementById('adminContent').style.display = 'block';
+      document.getElementById('passError').style.display = 'none';
+      document.getElementById('adminPassInput').closest('div').style.display='none';
+      renderAdminCards();
+    } else {
+      document.getElementById('passError').style.display = 'block';
+    }
+  }
+
+  // ───── ADMIN CARD LIST ─────
+  function renderAdminCards() {
+    // Admin edit list removed — just update the bride selection dropdown
+    updateBrideSelect();
+  }
 
   // ───── MODAL OPEN / CLOSE ─────
   function openModal() {
@@ -851,9 +929,14 @@
     }
     renderGrid();
     renderTally();
+    renderAdminCards();
     closeModal();
   }
 
+  // ───── ADMIN TOGGLE ─────
+  function toggleAdmin() {
+    document.getElementById('adminPanel').classList.toggle('open');
+  }
   function updateBrideSelect() {
     const sel = document.getElementById('brideSelect');
     sel.innerHTML = suspects.map((s,i)=>`<option value="${i}">${s.name}</option>`).join('');
@@ -912,7 +995,6 @@
       if(card) card.classList.add('selected');
       selectedIdx = idx;
       document.getElementById('voteStatus').textContent = `You already voted for ${suspects[idx].name}. Thank you!`;
-      const submitBtn = document.getElementById('submitVoteBtn'); if(submitBtn) submitBtn.disabled = true;
     }
   })();
 
