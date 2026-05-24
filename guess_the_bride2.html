@@ -567,7 +567,7 @@
 
   <div class="mystery-date">
     <p>The big day</p>
-    <div class="date-text"><span>6 / 6 / 2026</span> 💍🗓️</div>
+    <div class="date-text"><span>? / 6 / 2026</span> 💍🗓️</div>
     <div style="font-size:.75rem; color:var(--text-soft); margin-top:.2rem;">Mark your calendars! 🤫</div>
   </div>
 
@@ -577,7 +577,6 @@
     <div class="cd-box"><span class="cd-num" id="cd-mins">--</span><span class="cd-label">Mins</span></div>
     <div class="cd-box"><span class="cd-num" id="cd-secs">--</span><span class="cd-label">Secs</span></div>
   </div>
-  <div style="font-size:.75rem; color:var(--text-soft); margin-top:.6rem;">Counting down to June 6, 2026 💅</div>
 </div>
 
 <!-- VOTING -->
@@ -587,12 +586,8 @@
 
   <div class="vote-panel">
     <h3>🗳️ Cast Your Vote!</h3>
-    <p>Pick a card above, then enter your name and vote!</p>
-    <div class="vote-name-input">
-      <input type="text" id="voterName" placeholder="Your name (don't be shy 😄)" maxlength="30"/>
-      <button class="submit-vote-btn" id="submitVoteBtn" onclick="submitVote()" disabled>Vote 💌</button>
-    </div>
-    <p style="font-size:.8rem; color:var(--text-soft);" id="voteStatus">Select a suspect card first! 👆</p>
+    <p>Pick a card above — your vote is saved automatically when you pick.</p>
+    <p style="font-size:.8rem; color:var(--text-soft);" id="voteStatus">Select a suspect card to vote 👆</p>
   </div>
 
   <!-- Live tally -->
@@ -617,10 +612,6 @@
 
       <div id="adminContent" style="display:none;">
         <hr style="border:none;border-top:1.5px dashed var(--pink-mid);margin:1rem 0;">
-
-        <h4 style="margin-bottom:.8rem;">✏️ Edit Suspects & Photos</h4>
-        <div id="adminCardList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;"></div>
-        <button class="admin-reveal-btn" onclick="openModal()" style="margin-bottom:1.5rem;background:var(--pink);padding:.5rem 1.4rem;">➕ Add New Suspect</button>
 
         <hr style="border:none;border-top:1.5px dashed var(--pink-mid);margin:1rem 0;">
         <h4 style="margin-bottom:.8rem;">👑 Reveal the Real Bride</h4>
@@ -758,16 +749,55 @@
   // ───── SELECT SUSPECT ─────
   function selectSuspect(card, idx) {
     if (revealedIdx !== null) return;
+    // prevent multiple votes from the same browser/session
+    if (localStorage.getItem('vote') !== null) {
+      document.getElementById('voteStatus').textContent = 'You have already voted — thank you!';
+      return;
+    }
     document.querySelectorAll('.suspect-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     selectedIdx = idx;
-    document.getElementById('submitVoteBtn').disabled = document.getElementById('voterName').value.trim() === '';
-    document.getElementById('voteStatus').textContent = `You picked ${suspects[idx].name}! Enter your name and vote 💌`;
+    document.getElementById('voteStatus').textContent = `You picked ${suspects[idx].name}! Saving your vote...`;
+    recordVote(idx);
+  }
+
+  // ───── RECORD VOTE (automatic) ─────
+  function recordVote(idx) {
+    try {
+      let voterId = localStorage.getItem('voterId');
+      if (!voterId) {
+        voterId = Math.random().toString(36).slice(2) + Date.now();
+        localStorage.setItem('voterId', voterId);
+      }
+      // if previously voted, remove previous tally
+      const prev = localStorage.getItem('vote');
+      if (prev !== null && !isNaN(parseInt(prev))) {
+        const p = parseInt(prev);
+        if (suspects[p] && suspects[p].votes > 0) suspects[p].votes = Math.max(0, suspects[p].votes - 1);
+      }
+      localStorage.setItem('vote', idx);
+      votes[voterId] = idx;
+      if (suspects[idx]) suspects[idx].votes = (suspects[idx].votes || 0) + 1;
+      renderTally();
+      updateBrideSelect();
+      document.getElementById('voteStatus').textContent = `✅ Your vote for ${suspects[idx].name} is saved! 🎉`;
+      const card = document.querySelector(`.suspect-card[data-idx="${idx}"]`);
+      if(card) { card.classList.add('correct'); setTimeout(()=>card.classList.remove('correct'),600); }
+    } catch(e) {
+      console.error('recordVote error', e);
+      document.getElementById('voteStatus').textContent = 'Could not save your vote, try again.';
+    }
   }
 
   // ───── SUBMIT VOTE ─────
   function submitVote() {
     const nameEl = document.getElementById('voterName');
+    // If manual name input was removed, fall back to automatic vote recording
+    if (!nameEl) {
+      if (selectedIdx === null) return;
+      recordVote(selectedIdx);
+      return;
+    }
     const name = nameEl.value.trim();
     if (!name) { nameEl.focus(); nameEl.placeholder = 'Please enter your name! 😊'; return; }
     if (selectedIdx === null) return;
@@ -775,7 +805,7 @@
     suspects[selectedIdx].votes++;
     nameEl.value = '';
     document.getElementById('voteStatus').textContent = `✅ ${name}'s vote for ${suspects[selectedIdx].name} is locked in! 🎉`;
-    document.getElementById('submitVoteBtn').disabled = true;
+    const submitBtn = document.getElementById('submitVoteBtn'); if(submitBtn) submitBtn.disabled = true;
     renderTally();
     updateBrideSelect();
     const card = document.querySelector(`.suspect-card[data-idx="${selectedIdx}"]`);
@@ -820,19 +850,7 @@
 
   // ───── ADMIN CARD LIST ─────
   function renderAdminCards() {
-    const container = document.getElementById('adminCardList');
-    container.innerHTML = '';
-    suspects.forEach((s, idx) => {
-      const card = document.createElement('div');
-      card.style.cssText = 'background:var(--pink-pale);border:2px solid var(--pink-mid);border-radius:16px;padding:.8rem;text-align:center;';
-      card.innerHTML = `
-        <div style="width:70px;height:70px;border-radius:50%;margin:0 auto .5rem;border:2px solid var(--pink);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--white);">
-          ${s.photo ? `<img src="${s.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="${s.name}">` : `<span style="font-size:2rem">${s.emoji}</span>`}
-        </div>
-        <div style="font-weight:700;font-size:.9rem;color:var(--text);margin-bottom:.4rem;">${s.name}</div>
-          <button onclick="openEditModal(${idx})" style="background:var(--pink-deep);color:white;border:none;border-radius:8px;padding:.3rem .8rem;font-family:'Quicksand',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;">✏️ Edit</button>`;
-      container.appendChild(card);
-    });
+    // Admin edit list removed — just update the bride selection dropdown
     updateBrideSelect();
   }
 
@@ -968,9 +986,19 @@
     }
   }
 
-  document.getElementById('voterName').addEventListener('input', function() {
-    document.getElementById('submitVoteBtn').disabled = selectedIdx === null || this.value.trim()==='';
-  });
+  // restore previous vote if present
+  (function restoreVote(){
+    const v = localStorage.getItem('vote');
+    if(v !== null && !isNaN(parseInt(v))) {
+      const idx = parseInt(v);
+      const card = document.querySelector(`.suspect-card[data-idx="${idx}"]`);
+      if(card) card.classList.add('selected');
+      selectedIdx = idx;
+      document.getElementById('voteStatus').textContent = `You already voted for ${suspects[idx].name}. Thank you!`;
+    }
+  })();
+
+  // voterName input removed — votes are saved automatically on selection
 </script>
 </body>
 </html>
