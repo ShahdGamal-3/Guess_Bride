@@ -554,6 +554,9 @@
     <h3>🗳️ Cast Your Vote!</h3>
     <p>Pick a card above — your vote is saved automatically when you pick.</p>
     <p style="font-size:.8rem; color:var(--text-soft);" id="voteStatus">Select a suspect card to vote 👆</p>
+    <div style="margin-top:.6rem;">
+      <button class="submit-vote-btn" id="clearMyVoteBtn" onclick="clearMyVote()" style="background:#eee;color:#333;border-radius:10px;padding:.5rem .9rem;border:1px solid #ddd;">مسح صوتي (Clear my vote)</button>
+    </div>
   </div>
 
   <!-- Live tally -->
@@ -697,6 +700,7 @@
   // ───── SELECT SUSPECT ─────
   function selectSuspect(card, idx) {
     if (revealedIdx !== null) return;
+    console.debug('selectSuspect called', { idx });
     // allow changing your vote by picking a different card
     document.querySelectorAll('.suspect-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
@@ -713,6 +717,7 @@
         voterId = Math.random().toString(36).slice(2) + Date.now();
         localStorage.setItem('voterId', voterId);
       }
+      console.debug('recordVote start', { voterId, idx, prevLocal: localStorage.getItem('vote') });
       const prev = localStorage.getItem('vote');
       // optimistic local mark
       localStorage.setItem('vote', idx);
@@ -743,10 +748,22 @@
         renderTally();
         document.getElementById('voteStatus').textContent = `✅ Your vote for ${suspects[idx].name} is saved locally! 🎉`;
       }
+      console.debug('recordVote end', { voterId, idx });
     } catch(e) {
       console.error('recordVote error', e);
       document.getElementById('voteStatus').textContent = 'Could not save your vote, try again.';
     }
+  }
+
+  function clearMyVote() {
+    try {
+      localStorage.removeItem('vote');
+      localStorage.removeItem('voterId');
+      selectedIdx = null;
+      document.querySelectorAll('.suspect-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('voteStatus').textContent = 'Your local vote was cleared. You can vote again.';
+      console.debug('Local vote cleared');
+    } catch(e) { console.error('clearMyVote error', e); }
   }
 
   // ───── SUBMIT VOTE ─────
