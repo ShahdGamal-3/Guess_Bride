@@ -508,45 +508,6 @@
     position: relative; z-index: 1;
   }
 
-  /* ADMIN TOGGLE */
-  .admin-row {
-    text-align: center; margin-top: 2rem;
-  }
-  .admin-btn {
-    background: var(--pink-pale);
-    border: 2px solid var(--pink-mid);
-    border-radius: 12px; padding: .5rem 1.2rem;
-    font-family: 'Quicksand', sans-serif;
-    font-size: .85rem; font-weight: 700;
-    color: var(--text-soft); cursor: pointer;
-    transition: background .2s;
-  }
-  .admin-btn:hover { background: var(--pink-mid); }
-  .admin-panel {
-    display: none;
-    background: var(--white);
-    border: 2px solid var(--pink-mid);
-    border-radius: 18px; padding: 1.5rem;
-    margin-top: 1rem; text-align: center;
-  }
-  .admin-panel.open { display: block; }
-  .admin-panel h4 { font-family: 'Playfair Display', serif; color: var(--text); margin-bottom: .8rem; }
-  .admin-select {
-    font-family: 'Quicksand', sans-serif;
-    border: 2px solid var(--pink-mid);
-    border-radius: 10px; padding: .5rem .8rem;
-    color: var(--text); margin-right: .6rem;
-    background: var(--blush); font-size: .9rem;
-  }
-  .admin-reveal-btn {
-    background: var(--pink-deep);
-    color: white; border: none; border-radius: 10px;
-    padding: .5rem 1.2rem;
-    font-family: 'Quicksand', sans-serif;
-    font-size: .9rem; font-weight: 700;
-    cursor: pointer;
-  }
-
   @media (max-width: 480px) {
     .suspects-grid { grid-template-columns: repeat(2, 1fr); }
     .suspect-name { font-size: 1.1rem; }
@@ -809,25 +770,6 @@
   }
   renderTally();
 
-  // ───── ADMIN PASSWORD ─────
-  function checkAdminPass() {
-    const val = document.getElementById('adminPassInput').value;
-    if(val === ADMIN_PASS) {
-      document.getElementById('adminContent').style.display = 'block';
-      document.getElementById('passError').style.display = 'none';
-      document.getElementById('adminPassInput').closest('div').style.display='none';
-      renderAdminCards();
-    } else {
-      document.getElementById('passError').style.display = 'block';
-    }
-  }
-
-  // ───── ADMIN CARD LIST ─────
-  function renderAdminCards() {
-    // Admin edit list removed — just update the bride selection dropdown
-    updateBrideSelect();
-  }
-
   // ───── MODAL OPEN / CLOSE ─────
   function openModal() {
     document.getElementById('editIdx').value = '';
@@ -903,14 +845,9 @@
     }
     renderGrid();
     renderTally();
-    renderAdminCards();
     closeModal();
   }
 
-  // ───── ADMIN TOGGLE ─────
-  function toggleAdmin() {
-    document.getElementById('adminPanel').classList.toggle('open');
-  }
   function updateBrideSelect() {
     const sel = document.getElementById('brideSelect');
     sel.innerHTML = suspects.map((s,i)=>`<option value="${i}">${s.name}</option>`).join('');
