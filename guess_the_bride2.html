@@ -508,44 +508,7 @@
     position: relative; z-index: 1;
   }
 
-  /* ADMIN TOGGLE */
-  .admin-row {
-    text-align: center; margin-top: 2rem;
-  }
-  .admin-btn {
-    background: var(--pink-pale);
-    border: 2px solid var(--pink-mid);
-    border-radius: 12px; padding: .5rem 1.2rem;
-    font-family: 'Quicksand', sans-serif;
-    font-size: .85rem; font-weight: 700;
-    color: var(--text-soft); cursor: pointer;
-    transition: background .2s;
-  }
-  .admin-btn:hover { background: var(--pink-mid); }
-  .admin-panel {
-    display: none;
-    background: var(--white);
-    border: 2px solid var(--pink-mid);
-    border-radius: 18px; padding: 1.5rem;
-    margin-top: 1rem; text-align: center;
-  }
-  .admin-panel.open { display: block; }
-  .admin-panel h4 { font-family: 'Playfair Display', serif; color: var(--text); margin-bottom: .8rem; }
-  .admin-select {
-    font-family: 'Quicksand', sans-serif;
-    border: 2px solid var(--pink-mid);
-    border-radius: 10px; padding: .5rem .8rem;
-    color: var(--text); margin-right: .6rem;
-    background: var(--blush); font-size: .9rem;
-  }
-  .admin-reveal-btn {
-    background: var(--pink-deep);
-    color: white; border: none; border-radius: 10px;
-    padding: .5rem 1.2rem;
-    font-family: 'Quicksand', sans-serif;
-    font-size: .9rem; font-weight: 700;
-    cursor: pointer;
-  }
+  /* Admin styles removed */
 
   @media (max-width: 480px) {
     .suspects-grid { grid-template-columns: repeat(2, 1fr); }
@@ -597,29 +560,7 @@
     <p style="text-align:center; color:var(--text-soft); font-size:.85rem; margin-top:1rem;">Total votes: <strong id="totalVotes">0</strong> 🗳️</p>
   </div>
 
-  <!-- Admin reveal -->
-  <div class="admin-row">
-    <button class="admin-btn" onclick="toggleAdmin()">🔐 Admin Panel</button>
-    <div class="admin-panel" id="adminPanel">
-      <div style="margin-bottom:1.2rem;">
-        <label style="display:block;font-size:.8rem;font-weight:700;color:var(--text-soft);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:1px;">🔐 Admin Password</label>
-        <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;">
-          <input type="password" id="adminPassInput" placeholder="Enter admin password" style="padding:.5rem .9rem;border:2px solid var(--pink-mid);border-radius:10px;font-family:'Quicksand',sans-serif;font-size:.9rem;background:var(--blush);color:var(--text);outline:none;min-width:200px;">
-          <button class="admin-reveal-btn" onclick="checkAdminPass()">Unlock 🔓</button>
-        </div>
-        <p id="passError" style="font-size:.75rem;color:#EF4444;margin-top:.4rem;display:none;">Wrong password! Try again 🙅‍♀️</p>
-      </div>
-
-      <div id="adminContent" style="display:none;">
-        <hr style="border:none;border-top:1.5px dashed var(--pink-mid);margin:1rem 0;">
-
-        <hr style="border:none;border-top:1.5px dashed var(--pink-mid);margin:1rem 0;">
-        <h4 style="margin-bottom:.8rem;">👑 Reveal the Real Bride</h4>
-        <select class="admin-select" id="brideSelect"></select>
-        <button class="admin-reveal-btn" onclick="revealBride()">🎉 Reveal!</button>
-      </div>
-    </div>
-  </div>
+  <!-- Admin panel removed -->
 
   <!-- Reveal result -->
   <div class="reveal-section" id="revealSection">
@@ -632,33 +573,7 @@
   </div>
 </div>
 
-<!-- MODAL: Add / Edit Suspect -->
-<div class="modal-overlay" id="addModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <h3 id="modalTitle">Add a Suspect 🕵️‍♀️</h3>
-    <input type="hidden" id="editIdx" value="">
-
-    <label>Photo</label>
-    <div class="photo-upload-area" id="uploadArea">
-      <input type="file" accept="image/*" onchange="handlePhoto(event)" id="photoInput">
-      <img class="upload-preview" id="uploadPreview" alt="preview">
-      <span class="upload-icon" id="uploadIcon">📸</span>
-      <p id="uploadText">Tap to upload a photo</p>
-    </div>
-
-    <label>Name *</label>
-    <input type="text" id="newName" placeholder="e.g. Mona" maxlength="20">
-
-    <label>Her "vibe" (short title)</label>
-    <input type="text" id="newTrait" placeholder='e.g. "The Mysterious One"' maxlength="30">
-
-    <label>Funny clue about her 🕵️</label>
-    <textarea id="newClue" placeholder="What suspicious behaviour have you noticed? Spill the tea ☕"></textarea>
-
-    <button class="btn-primary" id="modalSaveBtn" onclick="saveSuspect()">Save 💌</button>
-  </div>
-</div>
+<!-- Admin modal removed -->
 
 <footer>
   Made with 💕 for the mystery bride of June 2026 &nbsp;|&nbsp; May the best guess win! 🏆
@@ -671,7 +586,6 @@
   let selectedIdx = null;
   let uploadedPhotoData = null;
   let revealedIdx = null;
-  const ADMIN_PASS = 'bride2026';
 
   // Suspects created from image files in the folder — names use the filenames
   const suspects = [
@@ -779,7 +693,6 @@
       votes[voterId] = idx;
       if (suspects[idx]) suspects[idx].votes = (suspects[idx].votes || 0) + 1;
       renderTally();
-      updateBrideSelect();
       document.getElementById('voteStatus').textContent = `✅ Your vote for ${suspects[idx].name} is saved! 🎉`;
       const card = document.querySelector(`.suspect-card[data-idx="${idx}"]`);
       if(card) { card.classList.add('correct'); setTimeout(()=>card.classList.remove('correct'),600); }
@@ -807,7 +720,6 @@
     document.getElementById('voteStatus').textContent = `✅ ${name}'s vote for ${suspects[selectedIdx].name} is locked in! 🎉`;
     const submitBtn = document.getElementById('submitVoteBtn'); if(submitBtn) submitBtn.disabled = true;
     renderTally();
-    updateBrideSelect();
     const card = document.querySelector(`.suspect-card[data-idx="${selectedIdx}"]`);
     if(card) { card.classList.add('correct'); setTimeout(()=>card.classList.remove('correct'),600); }
   }
@@ -835,140 +747,9 @@
   }
   renderTally();
 
-  // ───── ADMIN PASSWORD ─────
-  function checkAdminPass() {
-    const val = document.getElementById('adminPassInput').value;
-    if(val === ADMIN_PASS) {
-      document.getElementById('adminContent').style.display = 'block';
-      document.getElementById('passError').style.display = 'none';
-      document.getElementById('adminPassInput').closest('div').style.display='none';
-      renderAdminCards();
-    } else {
-      document.getElementById('passError').style.display = 'block';
-    }
-  }
+  // Admin features removed
 
-  // ───── ADMIN CARD LIST ─────
-  function renderAdminCards() {
-    // Admin edit list removed — just update the bride selection dropdown
-    updateBrideSelect();
-  }
-
-  // ───── MODAL OPEN / CLOSE ─────
-  function openModal() {
-    document.getElementById('editIdx').value = '';
-    document.getElementById('modalTitle').textContent = 'Add a Suspect 🕵️‍♀️';
-    document.getElementById('modalSaveBtn').textContent = 'Add Her to the List 💌';
-    clearModal();
-    document.getElementById('addModal').classList.add('open');
-  }
-  function openEditModal(idx) {
-    const s = suspects[idx];
-    document.getElementById('editIdx').value = idx;
-    document.getElementById('modalTitle').textContent = `Edit ${s.name} ✏️`;
-    document.getElementById('modalSaveBtn').textContent = 'Save Changes 💾';
-    document.getElementById('newName').value = s.name;
-    document.getElementById('newTrait').value = s.trait;
-    document.getElementById('newClue').value = s.clue;
-    uploadedPhotoData = s.photo;
-    if(s.photo) {
-      document.getElementById('uploadPreview').src = s.photo;
-      document.getElementById('uploadPreview').style.display = 'block';
-      document.getElementById('uploadIcon').style.display = 'none';
-      document.getElementById('uploadText').textContent = 'Tap to change photo';
-    } else {
-      document.getElementById('uploadPreview').style.display = 'none';
-      document.getElementById('uploadIcon').style.display = 'block';
-      document.getElementById('uploadText').textContent = 'Tap to upload a photo';
-    }
-    document.getElementById('addModal').classList.add('open');
-  }
-  function closeModal() {
-    document.getElementById('addModal').classList.remove('open');
-    clearModal();
-  }
-  function clearModal() {
-    uploadedPhotoData = null;
-    document.getElementById('uploadPreview').style.display='none';
-    document.getElementById('uploadIcon').style.display='block';
-    document.getElementById('uploadText').textContent='Tap to upload a photo';
-    document.getElementById('newName').value='';
-    document.getElementById('newTrait').value='';
-    document.getElementById('newClue').value='';
-    document.getElementById('photoInput').value='';
-  }
-
-  function handlePhoto(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      uploadedPhotoData = ev.target.result;
-      const prev = document.getElementById('uploadPreview');
-      prev.src = uploadedPhotoData; prev.style.display='block';
-      document.getElementById('uploadIcon').style.display='none';
-      document.getElementById('uploadText').textContent='Looking gorgeous! 😍';
-    };
-    reader.readAsDataURL(file);
-  }
-
-  // ───── SAVE SUSPECT (add or edit) ─────
-  function saveSuspect() {
-    const name = document.getElementById('newName').value.trim();
-    const trait = document.getElementById('newTrait').value.trim() || 'The Mystery One';
-    const clue = document.getElementById('newClue').value.trim() || 'Very suspicious behaviour detected. 🔍';
-    if (!name) { document.getElementById('newName').focus(); return; }
-    const editIdx = document.getElementById('editIdx').value;
-    if(editIdx !== '') {
-      const idx = parseInt(editIdx);
-      suspects[idx].name = name;
-      suspects[idx].trait = trait;
-      suspects[idx].clue = clue;
-      if(uploadedPhotoData) suspects[idx].photo = uploadedPhotoData;
-    } else {
-      suspects.push({ name, trait, clue, emoji:'🙋', photo: uploadedPhotoData, votes: 0 });
-    }
-    renderGrid();
-    renderTally();
-    renderAdminCards();
-    closeModal();
-  }
-
-  // ───── ADMIN TOGGLE ─────
-  function toggleAdmin() {
-    document.getElementById('adminPanel').classList.toggle('open');
-  }
-  function updateBrideSelect() {
-    const sel = document.getElementById('brideSelect');
-    sel.innerHTML = suspects.map((s,i)=>`<option value="${i}">${s.name}</option>`).join('');
-  }
-  updateBrideSelect();
-
-  // ───── REVEAL BRIDE ─────
-  function revealBride() {
-    const idx = parseInt(document.getElementById('brideSelect').value);
-    revealedIdx = idx;
-    const bride = suspects[idx];
-    const section = document.getElementById('revealSection');
-    section.classList.add('show');
-    document.getElementById('revealTitle').textContent = `The Bride is... ${bride.name}! 👰`;
-    document.getElementById('revealMsg').textContent = `Congratulations to our beautiful bride! 💍 ${bride.trait}`;
-    const photo = document.getElementById('revealPhoto');
-    photo.innerHTML = bride.photo
-      ? `<img src="${bride.photo}" alt="${bride.name}">`
-      : `<span style="font-size:4rem">${bride.emoji}</span>`;
-    const totalVotes = suspects.reduce((s,x)=>s+x.votes,0);
-    const correctVoters = Object.entries(votes).filter(([,v])=>v===idx).map(([n])=>n);
-    document.getElementById('revealStats').innerHTML = `
-      <div class="result-stat">💌 ${bride.votes} of ${totalVotes} voted correctly</div>
-      ${correctVoters.length ? `<div class="result-stat">🏆 Winners: ${correctVoters.join(', ')}</div>` : ''}
-      <div class="result-stat">🎯 ${totalVotes>0?Math.round(bride.votes/totalVotes*100):0}% got it right!</div>`;
-    section.scrollIntoView({behavior:'smooth', block:'center'});
-    document.querySelectorAll('.suspect-card').forEach(c => {
-      if(parseInt(c.dataset.idx) === idx) c.classList.add('correct');
-      else if(c.dataset.idx !== undefined) c.classList.add('wrong');
-    });
-    fireConfetti();
-  }
+  // Reveal functionality removed (admin-only)
 
   function fireConfetti() {
     const bg = document.getElementById('confettiBg');
