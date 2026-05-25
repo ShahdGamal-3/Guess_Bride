@@ -579,7 +579,25 @@
   Made with 💕 for the mystery bride of June 2026 &nbsp;|&nbsp; May the best guess win! 🏆
 </footer>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+
 <script>
+  // ───── FIREBASE SETUP ─────
+  const firebaseConfig = {
+    apiKey: "AIzaSyCZIJsrWj-ev7Vg1uk0iZTaGDZNNKvt1ps",
+    authDomain: "guess-the-bride.firebaseapp.com",
+    databaseURL: "https://guess-the-bride-default-rtdb.firebaseio.com",
+    projectId: "guess-the-bride",
+    storageBucket: "guess-the-bride.firebasestorage.app",
+    messagingSenderId: "849925826132",
+    appId: "1:849925826132:web:ad3fedc6161a4c2bce6fc1",
+    measurementId: "G-NMJ3LPB6J3"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
   // ───── DATA ─────
 
   const votes = {};
@@ -687,12 +705,11 @@
       const prev = localStorage.getItem('vote');
       if (prev !== null && !isNaN(parseInt(prev))) {
         const p = parseInt(prev);
-        if (suspects[p] && suspects[p].votes > 0) suspects[p].votes = Math.max(0, suspects[p].votes - 1);
+        db.ref('votes/' + voterId).remove();
       }
       localStorage.setItem('vote', idx);
       votes[voterId] = idx;
-      if (suspects[idx]) suspects[idx].votes = (suspects[idx].votes || 0) + 1;
-      renderTally();
+      db.ref('votes/' + voterId).set(idx);
       document.getElementById('voteStatus').textContent = `✅ Your vote for ${suspects[idx].name} is saved! 🎉`;
       const card = document.querySelector(`.suspect-card[data-idx="${idx}"]`);
       if(card) { card.classList.add('correct'); setTimeout(()=>card.classList.remove('correct'),600); }
@@ -745,6 +762,24 @@
       container.appendChild(row);
     });
   }
+
+  // ───── LOAD VOTES FROM FIREBASE ─────
+  function loadVotesFromFirebase() {
+    db.ref('votes').on('value', (snapshot) => {
+      suspects.forEach(s => s.votes = 0);
+      const data = snapshot.val();
+      if (data) {
+        Object.values(data).forEach(voteIdx => {
+          if (!isNaN(voteIdx) && suspects[voteIdx]) {
+            suspects[voteIdx].votes++;
+          }
+        });
+      }
+      renderTally();
+    });
+  }
+
+  loadVotesFromFirebase();
   renderTally();
 
   // Admin features removed
