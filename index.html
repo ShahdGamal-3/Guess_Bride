@@ -682,7 +682,6 @@
     document.querySelectorAll('.suspect-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     selectedIdx = idx;
-    document.getElementById('voteStatus').textContent = `You picked ${suspects[idx].name}! Saving your vote...`;
     recordVote(idx);
   }
 
@@ -703,12 +702,10 @@
       localStorage.setItem('vote', idx);
       votes[voterId] = idx;
       db.ref('votes/' + voterId).set(idx);
-      document.getElementById('voteStatus').textContent = `✅ Your vote for ${suspects[idx].name} is saved! 🎉`;
       const card = document.querySelector(`.suspect-card[data-idx="${idx}"]`);
       if(card) { card.classList.add('correct'); setTimeout(()=>card.classList.remove('correct'),600); }
     } catch(e) {
       console.error('recordVote error', e);
-      document.getElementById('voteStatus').textContent = 'Could not save your vote, try again.';
     }
   }
 
