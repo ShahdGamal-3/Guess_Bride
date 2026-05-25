@@ -579,8 +579,7 @@
   Made with 💕 for the mystery bride of June 2026 &nbsp;|&nbsp; May the best guess win! 🏆
 </footer>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-compat.js"></script>
 
 <script>
   // ───── FIREBASE SETUP ─────
@@ -595,8 +594,13 @@
     measurementId: "G-NMJ3LPB6J3"
   };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  let db;
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  } catch(e) {
+    console.error('Firebase init error:', e);
+  }
 
   // ───── DATA ─────
 
@@ -765,6 +769,10 @@
 
   // ───── LOAD VOTES FROM FIREBASE ─────
   function loadVotesFromFirebase() {
+    if (!db) {
+      console.error('Firebase not initialized');
+      return;
+    }
     db.ref('votes').on('value', (snapshot) => {
       suspects.forEach(s => s.votes = 0);
       const data = snapshot.val();
